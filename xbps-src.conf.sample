@@ -1,7 +1,7 @@
 # Allow building restricted packages like the Discord client
 XBPS_ALLOW_RESTRICTED=yes
 
-# Use another mirror (set here to the Fastly CDN mirror)
+# Use a faster mirror (Fastly CDN mirror)
 #XBPS_MIRROR=https://repo-fastly.voidlinux.org/current
 
 # Enable CCache

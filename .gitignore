@@ -1,0 +1,8 @@
+# Exclude whatever random junk that might end up in here
+/*
+!/.gitignore
+!/README.md
+!/LICENSE
+!/Makefile
+!/fetch-xtools-extra.sh
+!/xbps-src.conf.sample

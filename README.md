@@ -12,8 +12,10 @@ See also [the-maldridge/xbps-mini-builder](https://github.com/the-maldridge/xbps
 - `bash`
 - GNU `make`
 - `xtools`
+- [`xtools-extra`](https://github.com/freddylist/xtools-extra)
+	- Automatically downloaded if you have an internet connection.
 
-Install all requirements:
+### Install all requirements:
 ```
 # xbps-install -S bash make xtools
 ```
@@ -24,8 +26,8 @@ Install all requirements:
 ```
 $ git clone https://github.com/freddylist/xbps-src-framework.git
 ```
-2. Edit `conf.mak` to your liking.
-2. Edit `xbps-src.conf` to your liking.
+2. Create an `xbps-src.conf` to your liking:
+	- `cp xbps-src.conf.sample xbps-src.conf`
 	- I recommend having the following set:
 	```
 	XBPS_MIRROR=https://repo-fastly.voidlinux.org/current
@@ -42,10 +44,10 @@ $ git clone https://github.com/freddylist/xbps-src-framework.git
 	```
 3. Create directory named `srcpkgs` next to the makefile.
 3. Symlink or move packages that you wish to build on `make pkgs` to the `srcpkgs` directory.
+	- Don't symlink subpackages. If you need to build a subpackage, symlink the main package. Subpackages are always created with the main package, whether you want them to or not.
 4. Run `make pkgs`.
 5. Run `make install` to install repository configuration.
 	- This allows you to use `xbps-install` without `--repository=path/to/hostdir/binpkgs`.
-	- Uninstall with `make uninstall`.
 
 From there, you can have a cron/snooze job occasionally update template sources and build symlinked packages for you.
 
@@ -57,6 +59,7 @@ Do not be afraid to open an issue if something is unclear or doesn't work.
 
 Somewhat alive:
 - [freddylist/antivoid-packages](https://github.com/freddylist/antivoid-packages)
+- [ayoubelmhamdi/void-linux-templates](https://github.com/ayoubelmhamdi/void-linux-templates)
 - [Elvyria/voids-package-nightmare](https://github.com/Elvyria/voids-package-nightmare)
 - [sug0/voided-packages](https://github.com/sug0/voided-packages)
 - [mobinmob/abyss-packages](https://codeberg.org/mobinmob/abyss-packages)

@@ -2,20 +2,22 @@
 ROOT := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 HOSTDIR := $(ROOT)/hostdir
 
+export PATH := $(ROOT)/xtools-extra:${PATH}
+
 export XBPS_DISTDIR := $(ROOT)/void-packages
 XBPS_GIT = git -C $(XBPS_DISTDIR)
 REMOTE := https://github.com/void-linux/void-packages.git
 
-XBPS_SRC_FLAGS = -H $(HOSTDIR) -E
+XBPS_SRC_FLAGS = -H $(HOSTDIR)
 XBPS_SRC = $(XBPS_DISTDIR)/xbps-src $(XBPS_SRC_FLAGS)
 
 PRIVKEY := privkey.pem
 
-include conf.mak
+REPO_CONF := /etc/xbps.d/00-repository-local.conf
 
-.PHONY: install uninstall sync pkgs clean
+.PHONY: all install sync pkgs clean
 
-all: build
+all: pkgs
 
 # Install repository configuration.
 install: $(REPO_CONF)
@@ -24,10 +26,11 @@ $(REPO_CONF):
 	echo "# local repositories" > $@
 	echo "repository=$(HOSTDIR)/binpkgs" >> $@
 	echo "repository=$(HOSTDIR)/binpkgs/nonfree" >> $@
+	echo "repository=$(HOSTDIR)/binpkgs/multilib" >> $@
+	echo "repository=$(HOSTDIR)/binpkgs/multilib/nonfree" >> $@
+	echo "repository=$(HOSTDIR)/binpkgs/debug" >> $@
 
-# Uninstall repository configuration
-uninstall:
-	$(RM) $(REPO_CONF)
+pkgs: XBPS_SRC_FLAGS += -E
 
 # Build and sign packages in `srcpkgs` directory.
 pkgs: sync $(PRIVKEY) $(XBPS_DISTDIR)/etc/conf
@@ -47,12 +50,12 @@ $(PRIVKEY):
 	openssl genrsa -out $@ 4096 || ssh-keygen -b 4096 -t rsa -m PEM -N '' -f $@
 
 # Update void-packages and masterdir
-sync: $(XBPS_DISTDIR) $(XBPS_DISTDIR)/etc/conf
+sync: xtools-extra $(XBPS_DISTDIR) $(XBPS_DISTDIR)/etc/conf
 	$(XBPS_GIT) fetch --depth=1
 	$(XBPS_GIT) reset --hard origin/master
 	$(XBPS_SRC) binary-bootstrap
 	$(XBPS_SRC) bootstrap-update
-	./ensure-templates.sh srcpkgs/*
+	xpunt srcpkgs/*
 
 # Set up xbps-src configuration.
 $(XBPS_DISTDIR)/etc/conf: $(XBPS_DISTDIR) xbps-src.conf
@@ -62,17 +65,8 @@ $(XBPS_DISTDIR)/etc/conf: $(XBPS_DISTDIR) xbps-src.conf
 $(XBPS_DISTDIR):
 	git clone --depth=1 $(REMOTE) $(XBPS_DISTDIR)
 
-# Make sure these files exist.
-xbps-src.conf:
-	touch $@
-
-# Ensure xtools is installed.
-xtools:
-	@if [ -z "$$(command -v xgensum)" ]; then \
-		echo "Please install xtools!"; \
-		echo "# xbps-install -S xtools"; \
-		exit 1; \
-	fi
+xtools-extra:
+	command -v xpunt >/dev/null || ./fetch-xtools-extra.sh
 
 clean:
-	$(RM) -r $(XBPS_DISTDIR) $(HOSTDIR) $(PRIVKEY)
+	$(RM) -r $(XBPS_DISTDIR) $(HOSTDIR) $(PRIVKEY) xtools-extra{,.tar.gz}
