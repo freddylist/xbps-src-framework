@@ -45,7 +45,8 @@ $ git clone https://github.com/freddylist/xbps-src-framework.git
 3. Create directory named `srcpkgs` next to the makefile.
 3. Symlink or move packages that you wish to build on `make pkgs` to the `srcpkgs` directory.
 	- Don't symlink subpackages. If you need to build a subpackage, symlink the main package. Subpackages are always created with the main package, whether you want them to or not.
-4. Run `make pkgs`.
+4. Run `make pkgs` or `make <pkgname>`.
+	- Run `make sign` to sign all repositories and packages.
 5. Run `make install` to install repository configuration.
 	- This allows you to use `xbps-install` without `--repository=path/to/hostdir/binpkgs`.
 

@@ -3,7 +3,6 @@ ROOT := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 HOSTDIR := $(ROOT)/hostdir
 
 export PATH := $(ROOT)/xtools-extra:${PATH}
-
 export XBPS_DISTDIR := $(ROOT)/void-packages
 XBPS_GIT = git -C $(XBPS_DISTDIR)
 REMOTE := https://github.com/void-linux/void-packages.git
@@ -12,10 +11,10 @@ XBPS_SRC_FLAGS = -H $(HOSTDIR)
 XBPS_SRC = $(XBPS_DISTDIR)/xbps-src $(XBPS_SRC_FLAGS)
 
 PRIVKEY := privkey.pem
-
 REPO_CONF := /etc/xbps.d/00-repository-local.conf
+TARGET_PKGS := $(notdir $(realpath $(wildcard srcpkgs/*)))
 
-.PHONY: all install sync pkgs clean
+.PHONY: all install sync pkgs sign clean
 
 all: pkgs
 
@@ -32,12 +31,13 @@ $(REPO_CONF):
 
 pkgs: XBPS_SRC_FLAGS += -E
 
-# Build and sign packages in `srcpkgs` directory.
-pkgs: sync $(PRIVKEY) $(XBPS_DISTDIR)/etc/conf
-	# Templates are copied to distdir in sync target
-	# so just build everything listed in srcpkgs.
-	find srcpkgs -mindepth 1 -maxdepth 1 -printf '%f\0' \
-		| xargs -0 -n1 $(XBPS_SRC) pkg
+# Build all packages in `srcpkgs` directory.
+pkgs: $(TARGET_PKGS)
+
+$(TARGET_PKGS): sync $(XBPS_DISTDIR)/etc/conf
+	$(XBPS_SRC) pkg $@
+
+sign: $(PRIVKEY)
 	# Sign directories with repository data.
 	find $(HOSTDIR)/binpkgs -type f -name '*-repodata' -printf '%h\0' \
 		| xargs -0 -n1 xbps-rindex --sign --signedby 'antivoid-packages' --privkey $(PRIVKEY)
